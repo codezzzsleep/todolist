@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Todo List</title>
+        <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet">
+        <script src="https://d3js.org/d3.v3.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/cal-heatmap@3.6.2/cal-heatmap.min.js"></script>
+        <link href="https://cdn.jsdelivr.net/npm/cal-heatmap@3.6.2/cal-heatmap.css" rel="stylesheet" />
+    </head>
+<body>
+    <div class="container">
+        <h1 class="mt-5">Todos</h1>
+        <form method="POST" class="my-4">
+            <div class="input-group">
+                <input type="text" name="content" id="content" required class="form-control" placeholder="New task">
+                <div class="input-group-append">
+                    <input type="submit" value="Add Todo" class="btn btn-primary">
+                </div>
+            </div>
+        </form>
+
+        <ul class="list-unstyled">
+            {% for task in tasks %}
+                <li class="border-bottom py-2">
+                    <input type="checkbox" id="task{{ task.id }}" {{ "checked" if task.completed else "" }}>
+                    {{ task.content }} 
+                    <a href="/delete/{{ task.id }}" class="text-danger ml-2">Delete</a> 
+                    | 
+                    <a href="/update/{{ task.id }}" class="text-info ml-2">Update</a>
+                </li>
+            {% endfor %}
+        </ul>
+
+        <div id="cal-heatmap"></div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script>
+        var cal = new CalHeatMap();
+        cal.init({
+            start: new Date(),
+            data: "/api/completions",
+            dataType: "json",
+        });
+        
+        $(document).ready(function(){
+            $("input[type='checkbox']").on('change', function(e) {
+                var taskId = $(this).attr("id").slice(4);  // Remove "task" prefix
+                $.ajax({
+                    url: '/update/' + taskId,
+                    type: 'POST',
+                    data: { completed: this.checked }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
